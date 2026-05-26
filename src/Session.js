@@ -71,6 +71,19 @@ class Session{
     interestFor(paper, reviewer){
         return this.bidFor(paper, reviewer).interest();
     }
+    calcularCargaDeRevisiones(totalArticulos, totalRevisores){
+        let totalRevisiones = 3 * totalArticulos;
+        let base = Math.floor(totalRevisiones / totalRevisores);
+        let resto = totalRevisiones % totalRevisores;
+        let carga = {};
+        for (let i = 0; i < totalRevisores; i++){
+            if (i < resto)
+                carga[i] = base + 1;
+            else
+                carga[i] = base;
+        }
+        return carga;
+    }
 }
 
 module.exports = Session;

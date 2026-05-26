@@ -67,3 +67,32 @@ describe("During the bidding process, a Session", ()=>{
         expect(submission).toThrow();
     })
 })
+
+describe("US1.1: Cálculo de la carga de revisiones por revisor", ()=>{
+    it("con 4 artículos y 4 revisores, cada revisor tiene exactamente 3 revisiones", ()=>{
+        let totalArticulos = 4;
+        let totalRevisores = 4;
+        let carga = newSession.calcularCargaDeRevisiones(totalArticulos, totalRevisores);
+
+        expect(Object.keys(carga)).toHaveLength(4);
+        expect(carga[0]).toBe(3);
+        expect(carga[1]).toBe(3);
+        expect(carga[2]).toBe(3);
+        expect(carga[3]).toBe(3);
+    })
+
+    it("con 10 artículos y 7 revisores, distribuye el resto: 2 revisores con 5 y 5 con 4", ()=>{
+        let totalArticulos = 10;
+        let totalRevisores = 7;
+        let carga = newSession.calcularCargaDeRevisiones(totalArticulos, totalRevisores);
+
+        expect(Object.keys(carga)).toHaveLength(7);
+        expect(carga[0]).toBe(5);
+        expect(carga[1]).toBe(5);
+        expect(carga[2]).toBe(4);
+        expect(carga[3]).toBe(4);
+        expect(carga[4]).toBe(4);
+        expect(carga[5]).toBe(4);
+        expect(carga[6]).toBe(4);
+    })
+})
