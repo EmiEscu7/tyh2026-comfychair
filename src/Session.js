@@ -176,9 +176,7 @@ class Session{
         if (this.stage() == "Revision" )
             if(this.assigmentExistsFor(paper, reviewer)){
                 if(paper.reviewExistsFor(reviewer)){
-                    let existing = paper.reviewFor(reviewer);
-                    existing.setScore(score)
-                    existing.setReview(review)
+                    throw new Error("El reviewer ya ingreso una review para este paper.");
                 }
                 else{
                     paper.addReview(reviewer,review,score) 
