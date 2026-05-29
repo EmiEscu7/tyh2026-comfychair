@@ -202,8 +202,33 @@ class Session{
 
     obtenerArticulosOrdenadosPorScore(){
         let ordenados = [...this._papers];
-        ordenados.sort(function(a, b){ return b.score() - a.score(); });
+        ordenados.sort(function(a, b){ return b.score(true) - a.score(true); });
         return ordenados;
+    }
+
+    cantidadArticulosAAceptar(){
+        return Math.floor(this._papers.length * (this._acceptancePercentage / 100))
+    }
+
+    getPaper(paper){
+        return this._papers.find( (suspect) => (suspect == paper));
+    }
+
+    obtenerArticulosAceptados(){
+        let ordenados = this.obtenerArticulosOrdenadosPorScore()
+        let cantidadArticulosAAceptar = this.cantidadArticulosAAceptar()
+        let cantidadArticulosAceptados = 0
+        let paperOrigin
+        for(let i = 0; i < ordenados.length; i++){
+            paperOrigin = this.getPaper(ordenados[i])
+            if (cantidadArticulosAceptados < cantidadArticulosAAceptar && paperOrigin.score() >= 1){
+                paperOrigin.acceptPaper()
+                cantidadArticulosAceptados = this._papers.filter((suspect) => suspect.isAccepted() == true).length;
+            } else {
+                paperOrigin.declinePaper()
+            }
+        }
+        return this._papers.filter((suspect) => suspect.isAccepted() == true);
     }
 }
 

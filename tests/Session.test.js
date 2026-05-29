@@ -426,3 +426,107 @@ describe("US3.2: Ordenamiento de artículos por Score decreciente", ()=>{
         expect(ordenados[2]).toBe(paperC);
     })
 })
+
+describe("US3.3: Selección automática por Corte Fijo", ()=>{
+    it("retorna la cantidad de articulos a aceptar de acuerdo al porcentaje de aceptación.", ()=>{
+        let sesion = new Session();
+
+        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user5 = new User("User 5", "Uni 5", "u5@mail.com", "pass");
+
+        let paperA = new Paper("Paper A", [user1], user1);
+        let paperB = new Paper("Paper B", [user2], user2);
+        let paperC = new Paper("Paper C", [user3], user3);
+        let paperD = new Paper("Paper D", [user4], user4);
+        let paperE = new Paper("Paper D", [user5], user5);
+
+        sesion.submit(paperA);
+        sesion.submit(paperB);
+        sesion.submit(paperC);
+        sesion.setAcceptancePercentage(50)
+
+        let cantidadArticulosAAceptar = sesion.cantidadArticulosAAceptar()
+        expect(cantidadArticulosAAceptar).toBe(1);
+    })
+
+    it("se marcaron los papers aceptados de acuerdo al orden por score final y al porcentaje de aceptación.", ()=>{
+        let sesion = new Session();
+
+        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+
+        let paperA = new Paper("Paper A", [user1], user1);
+        let paperB = new Paper("Paper B", [user2], user2);
+        let paperC = new Paper("Paper C", [user3], user3);
+        let paperD = new Paper("Paper D", [user4], user4);
+
+        sesion.submit(paperA);
+        sesion.submit(paperB);
+        sesion.submit(paperC);
+        sesion.submit(paperD);
+        sesion.setAcceptancePercentage(50)
+
+        paperA.addReview(user2, "Rev A1", 1);
+        paperA.addReview(user3, "Rev A2", 2);
+
+        paperB.addReview(user1, "Rev B1", 2);
+        paperB.addReview(user3, "Rev B2", 3);
+
+        paperC.addReview(user1, "Rev C1", 1);
+        paperC.addReview(user2, "Rev C2", 2);
+
+        paperD.addReview(user1, "Rev C1", 2);
+        paperD.addReview(user3, "Rev C3", 3);
+
+        let cantidadArticulosAAceptar = sesion.cantidadArticulosAAceptar()
+        expect(cantidadArticulosAAceptar).toBe(2);
+
+        let aceptados = sesion.obtenerArticulosAceptados()
+        expect(aceptados).toHaveLength(2)
+        expect(paperA.isAccepted()).toBe(false);
+        expect(paperB.isAccepted()).toBe(true);
+        expect(paperC.isAccepted()).toBe(false);
+        expect(paperD.isAccepted()).toBe(true);
+    })
+
+    it("Para score final de un artículo se completan con puntaje -3 por review faltante.", ()=>{
+       let sesion = new Session();
+       let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
+       let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
+       let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+       let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+       let paperA = new Paper("Paper A", [user1], user1);
+
+       sesion.addReviewer(user1);
+       sesion.addReviewer(user2);
+       sesion.addReviewer(user3);
+       sesion.addReviewer(user4);
+       sesion.submit(paperA);
+       sesion.closeSubmissions();
+
+       sesion.enterBid(paperA, user1, Interests.Interested);
+       sesion.enterBid(paperA, user2, Interests.Maybe);
+       sesion.enterBid(paperA, user3, Interests.Maybe);
+       sesion.enterBid(paperA, user4, Interests.NotInterested);
+       sesion.closeBidding();
+
+       sesion.asignarRevisores();
+       expect(sesion.assigmentExistsFor(paperA,user2)).toBe(true);
+       expect(sesion.assigmentExistsFor(paperA,user3)).toBe(true);
+       expect(sesion.assigmentExistsFor(paperA,user4)).toBe(true);
+
+       sesion.closeAssigment();
+
+       sesion.enterReview(paperA,user2,"Rev user2",2);
+       sesion.enterReview(paperA,user3,"Rev user2",-1);
+       expect(paperA.reviews()).toHaveLength(2);
+
+       expect(paperA.score(true)).toBeCloseTo(-0.6666)
+
+   })
+})

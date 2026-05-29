@@ -7,6 +7,7 @@ class Paper{
         this._reviews = [];
         this._authors = authors;
         this._correspondingAuthor = correspondingAuthor;
+        this._accepted = false
     }
     title(){
         return this._title;
@@ -31,13 +32,21 @@ class Paper{
     reviewsCount(){
         return this.reviews().length;
     }
-    score(){
-        if (this.reviewsCount() > 0){
+    score(final = false){
+        if (final == false){
+            if (this.reviewsCount() > 0){
+                let sum = this.reviews().reduce( (partialSum, review) => partialSum + review.score(), 0 );
+                return sum / this.reviewsCount();
+            }else{ 
+                return 0;
+            }
+        }else{
             let sum = this.reviews().reduce( (partialSum, review) => partialSum + review.score(), 0 );
-            return sum / this.reviewsCount();
+            if (this.reviewsCount() < 3){
+                sum += (3 - this.reviewsCount()) * -3
+                return sum / 3
+            }
         }
-        else 
-            return 0;
     }
 
     reviewFor(reviewer){
@@ -46,6 +55,18 @@ class Paper{
 
     reviewExistsFor(reviewer){
         return typeof(this.reviewFor(reviewer)) != "undefined";
+    }
+
+    acceptPaper(){
+        this._accepted = true
+    }
+
+    declinePaper(){
+        this._accepted = false
+    }
+
+    isAccepted(){
+        return this._accepted
     }
 
 }
