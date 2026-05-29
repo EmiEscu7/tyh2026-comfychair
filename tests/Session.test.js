@@ -611,7 +611,7 @@ describe("US3.3: Selección automática por Corte Fijo", ()=>{
         paperA.addReview(user2, "Rev A1", 1);
         paperA.addReview(user3, "Rev A2", 2);
 
-        paperB.addReview(user1, "Rev B1", 2);
+        paperB.addReview(user1, "Rev B1", 3);
         paperB.addReview(user3, "Rev B2", 3);
 
         paperC.addReview(user1, "Rev C1", 1);

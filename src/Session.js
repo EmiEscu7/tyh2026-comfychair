@@ -229,7 +229,7 @@ class Session{
         let paperOrigin
         for(let i = 0; i < ordenados.length; i++){
             paperOrigin = this.getPaper(ordenados[i])
-            if (cantidadArticulosAceptados < cantidadArticulosAAceptar && paperOrigin.score() >= 1){
+            if (cantidadArticulosAceptados < cantidadArticulosAAceptar && paperOrigin.score(true) >= 1){
                 paperOrigin.acceptPaper()
                 cantidadArticulosAceptados = this._papers.filter((suspect) => suspect.isAccepted() == true).length;
             } else {
