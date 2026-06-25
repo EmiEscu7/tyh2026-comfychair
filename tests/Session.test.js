@@ -531,21 +531,23 @@ describe("US2.3: Cálculo automático del score del artículo", ()=>{
 })
 
 describe("US3.1: Configuración del porcentaje de aceptación de la sesión", ()=>{
+    const AcceptanceByPercentage = require("../src/policies/AcceptanceByPercentage");
+
     it("permite configurar un porcentaje válido y lo almacena correctamente", ()=>{
-        let sesion = new Session();
-        sesion.setAcceptancePercentage(25);
-        expect(sesion.acceptancePercentage()).toBe(25);
+        let politica = new AcceptanceByPercentage();
+        politica.setPercentage(25);
+        expect(politica.percentage()).toBe(25);
     })
 
     it("lanza un Error si el porcentaje es menor a 0", ()=>{
-        let sesion = new Session();
-        let invalidConfig = ()=>{ sesion.setAcceptancePercentage(-5) };
+        let politica = new AcceptanceByPercentage();
+        let invalidConfig = ()=>{ politica.setPercentage(-5) };
         expect(invalidConfig).toThrow();
     })
 
     it("lanza un Error si el porcentaje es mayor a 100", ()=>{
-        let sesion = new Session();
-        let invalidConfig = ()=>{ sesion.setAcceptancePercentage(105) };
+        let politica = new AcceptanceByPercentage();
+        let invalidConfig = ()=>{ politica.setPercentage(105) };
         expect(invalidConfig).toThrow();
     })
 })
@@ -593,6 +595,8 @@ describe("US3.2: Ordenamiento de artículos por Score decreciente", ()=>{
 })
 
 describe("US3.3: Selección automática por Corte Fijo", ()=>{
+    const AcceptanceByPercentage = require("../src/policies/AcceptanceByPercentage");
+
     it("retorna la cantidad de articulos a aceptar de acuerdo al porcentaje de aceptación.", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
@@ -612,7 +616,10 @@ describe("US3.3: Selección automática por Corte Fijo", ()=>{
         actualStage.submit(paperA);
         actualStage.submit(paperB);
         actualStage.submit(paperC);
-        sesion.setAcceptancePercentage(50)
+
+        let politica = new AcceptanceByPercentage();
+        politica.setPercentage(50);
+        sesion.setAcceptancePolicy(politica);
 
         let cantidadArticulosAAceptar = sesion.cantidadArticulosAAceptar()
         expect(cantidadArticulosAAceptar).toBe(1);
@@ -636,7 +643,10 @@ describe("US3.3: Selección automática por Corte Fijo", ()=>{
         actualStage.submit(paperB);
         actualStage.submit(paperC);
         actualStage.submit(paperD);
-        sesion.setAcceptancePercentage(50)
+
+        let politica = new AcceptanceByPercentage();
+        politica.setPercentage(50);
+        sesion.setAcceptancePolicy(politica);
 
         actualStage = actualStage.closeStage();
         actualStage = actualStage.closeStage();
@@ -708,6 +718,8 @@ describe("US3.3: Selección automática por Corte Fijo", ()=>{
 })
 
 describe("US4.1: Selección de articulos en otras etapas", ()=>{
+    const AcceptanceByPercentage = require("../src/policies/AcceptanceByPercentage");
+
 it("no se permite obtener el listado de articulos aceptados en otra etapa que no sea de Selección.", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
@@ -726,7 +738,10 @@ it("no se permite obtener el listado de articulos aceptados en otra etapa que no
         actualStage.submit(paperB);
         actualStage.submit(paperC);
         actualStage.submit(paperD);
-        sesion.setAcceptancePercentage(50)
+
+        let politica = new AcceptanceByPercentage();
+        politica.setPercentage(50);
+        sesion.setAcceptancePolicy(politica);
 
         actualStage = actualStage.closeStage();
         actualStage = actualStage.closeStage();
