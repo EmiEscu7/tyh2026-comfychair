@@ -784,3 +784,53 @@ it("no se permite obtener el listado de articulos aceptados en otra etapa que no
     })
 
 })
+
+describe("US2.1: Patrón Strategy - Extracción de Política por Porcentaje", ()=>{
+    const AcceptanceByPercentage = require("../src/policies/AcceptanceByPercentage");
+
+    it("con 50% de aceptación y 2 papers (scores 2.0 y 0.0), solo acepta el de mayor score", ()=>{
+        let sesion = new Session();
+        let actualStage = sesion.stage();
+
+        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+
+        let paperA = new Paper("Paper A", [user1], user1);
+        let paperB = new Paper("Paper B", [user2], user2);
+
+        sesion.addReviewer(user1);
+        sesion.addReviewer(user2);
+        sesion.addReviewer(user3);
+        sesion.addReviewer(user4);
+
+        actualStage.submit(paperA);
+        actualStage.submit(paperB);
+
+        let politica = new AcceptanceByPercentage();
+        politica.setPercentage(50);
+        sesion.setAcceptancePolicy(politica);
+
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+
+        paperA.addReview(user2, "Rev A1", 2);
+        paperA.addReview(user3, "Rev A2", 2);
+        paperA.addReview(user4, "Rev A3", 2);
+
+        paperB.addReview(user1, "Rev B1", 0);
+        paperB.addReview(user3, "Rev B2", 0);
+        paperB.addReview(user4, "Rev B3", 0);
+
+        actualStage = actualStage.closeStage();
+
+        let aceptados = actualStage.obtenerArticulosAceptados();
+        expect(aceptados).toHaveLength(1);
+        expect(paperA.isAccepted()).toBe(true);
+        expect(paperB.isAccepted()).toBe(false);
+
+        actualStage = actualStage.closeStage();
+    })
+})

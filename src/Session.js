@@ -2,6 +2,7 @@ const {Bid, Interests} = require("./Bid");
 const Assigment = require("./Assigment");
 const Review = require("./Review");
 const ReceivingStage = require("./Stage/ReceivingStage")
+const AcceptanceByPercentage = require("./policies/AcceptanceByPercentage")
 
 class Session{
     constructor(){
@@ -12,6 +13,7 @@ class Session{
         this._assignments=[];
         this._stage = new ReceivingStage(this);
         this._acceptancePercentage=0;
+        this._acceptancePolicy = new AcceptanceByPercentage();
     }
 
     name(){
@@ -42,6 +44,10 @@ class Session{
         return this._acceptancePercentage;
     }
 
+    acceptancePolicy(){
+        return this._acceptancePolicy;
+    }
+
     changeStage(Stage){
         this._stage = Stage
     }
@@ -50,12 +56,17 @@ class Session{
         if (percentage < 0 || percentage > 100)
             throw new Error("El porcentaje de aceptación debe estar entre 0 y 100.");
         this._acceptancePercentage = percentage;
+        this._acceptancePolicy.setPercentage(percentage);
     }
-    
+
+    setAcceptancePolicy(policy) {
+        this._acceptancePolicy = policy;
+    }
+
     addReviewer(user){
         this._programCommittee.push(user);
     }
-   
+
     assigmentsPapers(paper){
         let nCantAssigment = 0
         for(let i = 0; i < this._assignments.length; i++){
@@ -63,25 +74,25 @@ class Session{
         }
         return nCantAssigment
     }
-    
+
     bidExistsFor(paper, reviewer){
         return typeof(this.bidFor(paper, reviewer)) != "undefined";
     }
-    
+
     bidFor(paper, reviewer){
         return this._bids.find( (suspect) => (suspect.paper() == paper) && (suspect.reviewer()==reviewer) );
     }
-    
+
     interestFor(paper, reviewer){
         return this.bidFor(paper, reviewer).interest();
     }
-    
+
     interestOrDefaultFor(paper, reviewer){
         if(this.bidExistsFor(paper, reviewer))
             return this.interestFor(paper, reviewer);
         return Interests.NotInterested;
     }
-    
+
     assigmentExistsFor(paper, reviewer){
         return typeof(this.assigmentFor(paper, reviewer)) != "undefined";
     }
@@ -107,7 +118,7 @@ class Session{
     }
 
     cantidadArticulosAAceptar(){
-        return Math.floor(this._papers.length * (this._acceptancePercentage / 100))
+        return this._acceptancePolicy.calcularCantidadAAceptar(this._papers.length);
     }
 
 }

@@ -12,20 +12,7 @@ class SelectionStage extends SessionStage{
     }
 
     obtenerArticulosAceptados(){
-        let ordenados = this.obtenerArticulosOrdenadosPorScore()
-        let cantidadArticulosAAceptar = this._Session.cantidadArticulosAAceptar()
-        let cantidadArticulosAceptados = 0
-        let paperOrigin
-        for(let i = 0; i < ordenados.length; i++){
-            paperOrigin = ordenados[i]
-            if (cantidadArticulosAceptados < cantidadArticulosAAceptar && paperOrigin.finalScore() >= 1){
-                paperOrigin.acceptPaper()
-                cantidadArticulosAceptados = this._Session.papers().filter((suspect) => suspect.isAccepted() == true).length;
-            } else {
-                paperOrigin.declinePaper()
-            }
-        }
-        return this._Session.papers().filter((suspect) => suspect.isAccepted() == true);
+        return this._Session.acceptancePolicy().seleccionarArticulos(this._Session.papers());
     }
 
 }
