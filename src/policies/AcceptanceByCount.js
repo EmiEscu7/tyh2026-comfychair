@@ -11,11 +11,7 @@ class AcceptanceByCount extends AcceptancePolicy {
     }
 
     seleccionarArticulos(papers) {
-        let ordenados = [...papers];
-        ordenados.sort(function(a, b) {
-            let diff = b.finalScore() - a.finalScore();
-            return diff !== 0 ? diff : 0;
-        });
+        let ordenados = this.ordenarArticulosPorScore(papers);
 
         for (let i = 0; i < ordenados.length; i++) {
             if (i < this._maxCount) {
@@ -25,7 +21,7 @@ class AcceptanceByCount extends AcceptancePolicy {
             }
         }
 
-        return papers.filter(function(p) { return p.isAccepted() === true; });
+        return this.obtenerAceptados(papers);
     }
 }
 

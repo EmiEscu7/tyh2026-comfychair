@@ -19,7 +19,7 @@ class AcceptanceByScoreThreshold extends AcceptancePolicy {
             }
         }
 
-        return papers.filter(function(p) { return p.isAccepted() === true; });
+        return this.obtenerAceptados(papers);
     }
 }
 
