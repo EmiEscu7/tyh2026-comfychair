@@ -899,3 +899,68 @@ describe("US2.2: Política de Aceptación por Cantidad Fija (AcceptanceByCount)"
         actualStage = actualStage.closeStage();
     })
 })
+
+describe("US2.3: Política de Aceptación por Umbral de Score (AcceptanceByScoreThreshold)", ()=>{
+    const AcceptanceByScoreThreshold = require("../src/policies/AcceptanceByScoreThreshold");
+
+    it("con umbral 1.5 y 4 papers (scores 2.0, 1.67, 1.0, 0.0), acepta solo los >= 1.5", ()=>{
+        let sesion = new Session();
+        let actualStage = sesion.stage();
+
+        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user5 = new User("User 5", "Uni 5", "u5@mail.com", "pass");
+
+        let paperA = new Paper("Paper A", [user1], user1);
+        let paperB = new Paper("Paper B", [user2], user2);
+        let paperC = new Paper("Paper C", [user3], user3);
+        let paperD = new Paper("Paper D", [user4], user4);
+
+        sesion.addReviewer(user1);
+        sesion.addReviewer(user2);
+        sesion.addReviewer(user3);
+        sesion.addReviewer(user4);
+        sesion.addReviewer(user5);
+
+        actualStage.submit(paperA);
+        actualStage.submit(paperB);
+        actualStage.submit(paperC);
+        actualStage.submit(paperD);
+
+        let politica = new AcceptanceByScoreThreshold(1.5);
+        sesion.setAcceptancePolicy(politica);
+
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+
+        paperA.addReview(user2, "Rev A1", 2);
+        paperA.addReview(user3, "Rev A2", 2);
+        paperA.addReview(user4, "Rev A3", 2);
+
+        paperB.addReview(user2, "Rev B1", 2);
+        paperB.addReview(user3, "Rev B2", 2);
+        paperB.addReview(user4, "Rev B3", 1);
+
+        paperC.addReview(user2, "Rev C1", 1);
+        paperC.addReview(user3, "Rev C2", 1);
+        paperC.addReview(user4, "Rev C3", 1);
+
+        paperD.addReview(user2, "Rev D1", 0);
+        paperD.addReview(user3, "Rev D2", 0);
+        paperD.addReview(user4, "Rev D3", 0);
+
+        actualStage = actualStage.closeStage();
+
+        let aceptados = actualStage.obtenerArticulosAceptados();
+        expect(aceptados).toHaveLength(2);
+        expect(paperA.isAccepted()).toBe(true);
+        expect(paperB.isAccepted()).toBe(true);
+        expect(paperC.isAccepted()).toBe(false);
+        expect(paperD.isAccepted()).toBe(false);
+
+        actualStage = actualStage.closeStage();
+    })
+})
