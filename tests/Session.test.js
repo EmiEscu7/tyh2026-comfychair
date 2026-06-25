@@ -964,3 +964,73 @@ describe("US2.3: Política de Aceptación por Umbral de Score (AcceptanceByScore
         actualStage = actualStage.closeStage();
     })
 })
+
+describe("US2.4: Intercambio Dinámico de Políticas (Patrón Strategy)", ()=>{
+    const AcceptanceByScoreThreshold = require("../src/policies/AcceptanceByScoreThreshold");
+    const AcceptanceByCount = require("../src/policies/AcceptanceByCount");
+
+    it("cambia la política de umbral a cupo fijo y re-evalúa la selección", ()=>{
+        let sesion = new Session();
+        let actualStage = sesion.stage();
+
+        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+
+        let paperA = new Paper("Paper A", [user1], user1);
+        let paperB = new Paper("Paper B", [user2], user2);
+        let paperC = new Paper("Paper C", [user3], user3);
+
+        sesion.addReviewer(user1);
+        sesion.addReviewer(user2);
+        sesion.addReviewer(user3);
+        sesion.addReviewer(user4);
+
+        actualStage.submit(paperA);
+        actualStage.submit(paperB);
+        actualStage.submit(paperC);
+
+        let politicaUmbral = new AcceptanceByScoreThreshold(1.5);
+        sesion.setAcceptancePolicy(politicaUmbral);
+
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+
+        paperA.addReview(user2, "Rev A1", 2);
+        paperA.addReview(user3, "Rev A2", 2);
+        paperA.addReview(user4, "Rev A3", 2);
+
+        paperB.addReview(user2, "Rev B1", 2);
+        paperB.addReview(user3, "Rev B2", 2);
+        paperB.addReview(user4, "Rev B3", 1);
+
+        paperC.addReview(user2, "Rev C1", 0);
+        paperC.addReview(user3, "Rev C2", 0);
+        paperC.addReview(user4, "Rev C3", 0);
+
+        actualStage = actualStage.closeStage();
+
+        let aceptados = actualStage.obtenerArticulosAceptados();
+        expect(aceptados).toHaveLength(2);
+        expect(paperA.isAccepted()).toBe(true);
+        expect(paperB.isAccepted()).toBe(true);
+        expect(paperC.isAccepted()).toBe(false);
+
+        let politicaCupo = new AcceptanceByCount(1);
+        sesion.setAcceptancePolicy(politicaCupo);
+
+        paperA.declinePaper();
+        paperB.declinePaper();
+        paperC.declinePaper();
+
+        aceptados = actualStage.obtenerArticulosAceptados();
+        expect(aceptados).toHaveLength(1);
+        expect(paperA.isAccepted()).toBe(true);
+        expect(paperB.isAccepted()).toBe(false);
+        expect(paperC.isAccepted()).toBe(false);
+
+        actualStage = actualStage.closeStage();
+    })
+})
