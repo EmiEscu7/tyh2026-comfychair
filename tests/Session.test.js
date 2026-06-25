@@ -531,21 +531,23 @@ describe("US2.3: Cálculo automático del score del artículo", ()=>{
 })
 
 describe("US3.1: Configuración del porcentaje de aceptación de la sesión", ()=>{
+    const AcceptanceByPercentage = require("../src/policies/AcceptanceByPercentage");
+
     it("permite configurar un porcentaje válido y lo almacena correctamente", ()=>{
-        let sesion = new Session();
-        sesion.setAcceptancePercentage(25);
-        expect(sesion.acceptancePercentage()).toBe(25);
+        let politica = new AcceptanceByPercentage();
+        politica.setPercentage(25);
+        expect(politica.percentage()).toBe(25);
     })
 
     it("lanza un Error si el porcentaje es menor a 0", ()=>{
-        let sesion = new Session();
-        let invalidConfig = ()=>{ sesion.setAcceptancePercentage(-5) };
+        let politica = new AcceptanceByPercentage();
+        let invalidConfig = ()=>{ politica.setPercentage(-5) };
         expect(invalidConfig).toThrow();
     })
 
     it("lanza un Error si el porcentaje es mayor a 100", ()=>{
-        let sesion = new Session();
-        let invalidConfig = ()=>{ sesion.setAcceptancePercentage(105) };
+        let politica = new AcceptanceByPercentage();
+        let invalidConfig = ()=>{ politica.setPercentage(105) };
         expect(invalidConfig).toThrow();
     })
 })
@@ -593,6 +595,8 @@ describe("US3.2: Ordenamiento de artículos por Score decreciente", ()=>{
 })
 
 describe("US3.3: Selección automática por Corte Fijo", ()=>{
+    const AcceptanceByPercentage = require("../src/policies/AcceptanceByPercentage");
+
     it("retorna la cantidad de articulos a aceptar de acuerdo al porcentaje de aceptación.", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
@@ -612,7 +616,10 @@ describe("US3.3: Selección automática por Corte Fijo", ()=>{
         actualStage.submit(paperA);
         actualStage.submit(paperB);
         actualStage.submit(paperC);
-        sesion.setAcceptancePercentage(50)
+
+        let politica = new AcceptanceByPercentage();
+        politica.setPercentage(50);
+        sesion.setAcceptancePolicy(politica);
 
         let cantidadArticulosAAceptar = sesion.cantidadArticulosAAceptar()
         expect(cantidadArticulosAAceptar).toBe(1);
@@ -636,7 +643,10 @@ describe("US3.3: Selección automática por Corte Fijo", ()=>{
         actualStage.submit(paperB);
         actualStage.submit(paperC);
         actualStage.submit(paperD);
-        sesion.setAcceptancePercentage(50)
+
+        let politica = new AcceptanceByPercentage();
+        politica.setPercentage(50);
+        sesion.setAcceptancePolicy(politica);
 
         actualStage = actualStage.closeStage();
         actualStage = actualStage.closeStage();
@@ -708,6 +718,8 @@ describe("US3.3: Selección automática por Corte Fijo", ()=>{
 })
 
 describe("US4.1: Selección de articulos en otras etapas", ()=>{
+    const AcceptanceByPercentage = require("../src/policies/AcceptanceByPercentage");
+
 it("no se permite obtener el listado de articulos aceptados en otra etapa que no sea de Selección.", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
@@ -726,7 +738,10 @@ it("no se permite obtener el listado de articulos aceptados en otra etapa que no
         actualStage.submit(paperB);
         actualStage.submit(paperC);
         actualStage.submit(paperD);
-        sesion.setAcceptancePercentage(50)
+
+        let politica = new AcceptanceByPercentage();
+        politica.setPercentage(50);
+        sesion.setAcceptancePolicy(politica);
 
         actualStage = actualStage.closeStage();
         actualStage = actualStage.closeStage();
@@ -830,6 +845,206 @@ describe("US2.1: Patrón Strategy - Extracción de Política por Porcentaje", ()
         expect(aceptados).toHaveLength(1);
         expect(paperA.isAccepted()).toBe(true);
         expect(paperB.isAccepted()).toBe(false);
+
+        actualStage = actualStage.closeStage();
+    })
+})
+
+describe("US2.2: Política de Aceptación por Cantidad Fija (AcceptanceByCount)", ()=>{
+    const AcceptanceByCount = require("../src/policies/AcceptanceByCount");
+
+    it("con máximo 2 artículos y 4 papers (scores 3.0, 1.0, 2.5, 0.0), acepta solo los 2 de mayor score", ()=>{
+        let sesion = new Session();
+        let actualStage = sesion.stage();
+
+        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user5 = new User("User 5", "Uni 5", "u5@mail.com", "pass");
+
+        let paperA = new Paper("Paper A", [user1], user1);
+        let paperB = new Paper("Paper B", [user2], user2);
+        let paperC = new Paper("Paper C", [user3], user3);
+        let paperD = new Paper("Paper D", [user4], user4);
+
+        sesion.addReviewer(user1);
+        sesion.addReviewer(user2);
+        sesion.addReviewer(user3);
+        sesion.addReviewer(user4);
+        sesion.addReviewer(user5);
+
+        actualStage.submit(paperA);
+        actualStage.submit(paperB);
+        actualStage.submit(paperC);
+        actualStage.submit(paperD);
+
+        let politica = new AcceptanceByCount(2);
+        sesion.setAcceptancePolicy(politica);
+
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+
+        paperA.addReview(user2, "Rev A1", 3);
+        paperA.addReview(user3, "Rev A2", 3);
+        paperA.addReview(user4, "Rev A3", 3);
+
+        paperB.addReview(user2, "Rev B1", 1);
+        paperB.addReview(user3, "Rev B2", 1);
+        paperB.addReview(user4, "Rev B3", 1);
+
+        paperC.addReview(user2, "Rev C1", 3);
+        paperC.addReview(user3, "Rev C2", 2);
+        paperC.addReview(user4, "Rev C3", 3);
+
+        paperD.addReview(user2, "Rev D1", 0);
+        paperD.addReview(user3, "Rev D2", 0);
+        paperD.addReview(user4, "Rev D3", 0);
+
+        actualStage = actualStage.closeStage();
+
+        let aceptados = actualStage.obtenerArticulosAceptados();
+        expect(aceptados).toHaveLength(2);
+        expect(paperA.isAccepted()).toBe(true);
+        expect(paperC.isAccepted()).toBe(true);
+        expect(paperB.isAccepted()).toBe(false);
+        expect(paperD.isAccepted()).toBe(false);
+
+        actualStage = actualStage.closeStage();
+    })
+})
+
+describe("US2.3: Política de Aceptación por Umbral de Score (AcceptanceByScoreThreshold)", ()=>{
+    const AcceptanceByScoreThreshold = require("../src/policies/AcceptanceByScoreThreshold");
+
+    it("con umbral 1.5 y 4 papers (scores 2.0, 1.67, 1.0, 0.0), acepta solo los >= 1.5", ()=>{
+        let sesion = new Session();
+        let actualStage = sesion.stage();
+
+        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user5 = new User("User 5", "Uni 5", "u5@mail.com", "pass");
+
+        let paperA = new Paper("Paper A", [user1], user1);
+        let paperB = new Paper("Paper B", [user2], user2);
+        let paperC = new Paper("Paper C", [user3], user3);
+        let paperD = new Paper("Paper D", [user4], user4);
+
+        sesion.addReviewer(user1);
+        sesion.addReviewer(user2);
+        sesion.addReviewer(user3);
+        sesion.addReviewer(user4);
+        sesion.addReviewer(user5);
+
+        actualStage.submit(paperA);
+        actualStage.submit(paperB);
+        actualStage.submit(paperC);
+        actualStage.submit(paperD);
+
+        let politica = new AcceptanceByScoreThreshold(1.5);
+        sesion.setAcceptancePolicy(politica);
+
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+
+        paperA.addReview(user2, "Rev A1", 2);
+        paperA.addReview(user3, "Rev A2", 2);
+        paperA.addReview(user4, "Rev A3", 2);
+
+        paperB.addReview(user2, "Rev B1", 2);
+        paperB.addReview(user3, "Rev B2", 2);
+        paperB.addReview(user4, "Rev B3", 1);
+
+        paperC.addReview(user2, "Rev C1", 1);
+        paperC.addReview(user3, "Rev C2", 1);
+        paperC.addReview(user4, "Rev C3", 1);
+
+        paperD.addReview(user2, "Rev D1", 0);
+        paperD.addReview(user3, "Rev D2", 0);
+        paperD.addReview(user4, "Rev D3", 0);
+
+        actualStage = actualStage.closeStage();
+
+        let aceptados = actualStage.obtenerArticulosAceptados();
+        expect(aceptados).toHaveLength(2);
+        expect(paperA.isAccepted()).toBe(true);
+        expect(paperB.isAccepted()).toBe(true);
+        expect(paperC.isAccepted()).toBe(false);
+        expect(paperD.isAccepted()).toBe(false);
+
+        actualStage = actualStage.closeStage();
+    })
+})
+
+describe("US2.4: Intercambio Dinámico de Políticas (Patrón Strategy)", ()=>{
+    const AcceptanceByScoreThreshold = require("../src/policies/AcceptanceByScoreThreshold");
+    const AcceptanceByCount = require("../src/policies/AcceptanceByCount");
+
+    it("cambia la política de umbral a cupo fijo y re-evalúa la selección", ()=>{
+        let sesion = new Session();
+        let actualStage = sesion.stage();
+
+        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+
+        let paperA = new Paper("Paper A", [user1], user1);
+        let paperB = new Paper("Paper B", [user2], user2);
+        let paperC = new Paper("Paper C", [user3], user3);
+
+        sesion.addReviewer(user1);
+        sesion.addReviewer(user2);
+        sesion.addReviewer(user3);
+        sesion.addReviewer(user4);
+
+        actualStage.submit(paperA);
+        actualStage.submit(paperB);
+        actualStage.submit(paperC);
+
+        let politicaUmbral = new AcceptanceByScoreThreshold(1.5);
+        sesion.setAcceptancePolicy(politicaUmbral);
+
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+        actualStage = actualStage.closeStage();
+
+        paperA.addReview(user2, "Rev A1", 2);
+        paperA.addReview(user3, "Rev A2", 2);
+        paperA.addReview(user4, "Rev A3", 2);
+
+        paperB.addReview(user2, "Rev B1", 2);
+        paperB.addReview(user3, "Rev B2", 2);
+        paperB.addReview(user4, "Rev B3", 1);
+
+        paperC.addReview(user2, "Rev C1", 0);
+        paperC.addReview(user3, "Rev C2", 0);
+        paperC.addReview(user4, "Rev C3", 0);
+
+        actualStage = actualStage.closeStage();
+
+        let aceptados = actualStage.obtenerArticulosAceptados();
+        expect(aceptados).toHaveLength(2);
+        expect(paperA.isAccepted()).toBe(true);
+        expect(paperB.isAccepted()).toBe(true);
+        expect(paperC.isAccepted()).toBe(false);
+
+        let politicaCupo = new AcceptanceByCount(1);
+        sesion.setAcceptancePolicy(politicaCupo);
+
+        paperA.declinePaper();
+        paperB.declinePaper();
+        paperC.declinePaper();
+
+        aceptados = actualStage.obtenerArticulosAceptados();
+        expect(aceptados).toHaveLength(1);
+        expect(paperA.isAccepted()).toBe(true);
+        expect(paperB.isAccepted()).toBe(false);
+        expect(paperC.isAccepted()).toBe(false);
 
         actualStage = actualStage.closeStage();
     })

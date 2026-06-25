@@ -21,9 +21,7 @@ class AcceptanceByPercentage extends AcceptancePolicy {
     }
 
     seleccionarArticulos(papers) {
-        let ordenados = [...papers];
-        ordenados.sort(function(a, b) { return b.finalScore() - a.finalScore(); });
-
+        let ordenados = this.ordenarArticulosPorScore(papers);
         let cantidadAAceptar = Math.floor(papers.length * (this._percentage / 100));
         let cantidadAceptados = 0;
 
@@ -31,13 +29,13 @@ class AcceptanceByPercentage extends AcceptancePolicy {
             let paper = ordenados[i];
             if (cantidadAceptados < cantidadAAceptar && paper.finalScore() >= 1) {
                 paper.acceptPaper();
-                cantidadAceptados = papers.filter(function(p) { return p.isAccepted() === true; }).length;
+                cantidadAceptados = this.obtenerAceptados(papers).length;
             } else {
                 paper.declinePaper();
             }
         }
 
-        return papers.filter(function(p) { return p.isAccepted() === true; });
+        return this.obtenerAceptados(papers);
     }
 }
 
