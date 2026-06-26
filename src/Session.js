@@ -40,6 +40,7 @@ class Session{
         return this._stage
     }
 
+    /** @deprecated Usar acceptancePolicy().percentage() en su lugar. */
     acceptancePercentage(){
         return this._acceptancePercentage;
     }
@@ -52,6 +53,7 @@ class Session{
         this._stage = Stage
     }
 
+    /** @deprecated Usar setAcceptancePolicy() con una instancia de AcceptanceByPercentage en su lugar. */
     setAcceptancePercentage(percentage){
         if (percentage < 0 || percentage > 100)
             throw new Error("El porcentaje de aceptación debe estar entre 0 y 100.");
