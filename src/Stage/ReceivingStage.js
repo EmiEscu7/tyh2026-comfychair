@@ -1,4 +1,4 @@
-const SessionStage = require("../SessionStage");
+const SessionStage = require("./SessionStage");
 const BiddingStage = require("./BiddingStage");
 
 class ReceivingStage extends SessionStage{

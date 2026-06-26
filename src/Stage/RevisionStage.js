@@ -1,4 +1,4 @@
-const SessionStage = require("../SessionStage");
+const SessionStage = require("./SessionStage");
 const SelectionStage = require("./SelectionStage");
 
 class RevisionStage extends SessionStage{

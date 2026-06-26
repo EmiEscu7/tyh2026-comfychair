@@ -1,4 +1,4 @@
-const SessionStage = require("../SessionStage");
+const SessionStage = require("./SessionStage");
 const AssigmentStage = require("./AssigmentStage");
 const {Bid, Interests} = require("../Bid");
 
