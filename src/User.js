@@ -8,8 +8,6 @@ class User{
         this.affiliation = affiliation;
         this.email = email;
         this.encryptedPassword = hash.update(password).digest('base64');
-        this.papersAssigned = 0;
-        this.workload = 1;
     }
 
     getEncryptedPassword(){
@@ -22,24 +20,6 @@ class User{
 
     getPapersAssigned(){
         return this.papersAssigned;
-    }
-
-    setWorkload(workload){
-        if(workload > 0) {
-            this.workload = workload;
-        }
-    }
-
-    getWorkload(){
-        return this.workload;
-    }
-
-    acceptPapers() {
-        return this.papersAssigned < this.workload;
-    }
-
-    isAuthor(authors){
-        return authors.includes(this);
     }
 }
 
