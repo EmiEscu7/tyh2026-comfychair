@@ -103,24 +103,43 @@ class Session{
         return this._assignments.find( (suspect) => (suspect.paper() == paper) && (suspect.reviewer()==reviewer) );
     }
 
-    calcularCargaDeRevisiones(){
+    calculateWorkload(){
         let totalArticulos = this.papers().length
         let totalRevisores = this.programCommittee().length
         let totalRevisiones = 3 * totalArticulos;
         let base = Math.floor(totalRevisiones / totalRevisores);
         let resto = totalRevisiones % totalRevisores;
-        let carga = {};
-        for (let i = 0; i < totalRevisores; i++){
-            if (i < resto)
-                carga[i] = base + 1;
-            else
-                carga[i] = base;
-        }
-        return carga;
+        this.programCommittee().forEach((reviewer, index) => {
+            let workload = base + (index < resto ? 1 : 0);
+            reviewer.setWorkload(workload);
+        });
+
     }
 
     cantidadArticulosAAceptar(){
         return this._acceptancePolicy.calcularCantidadAAceptar(this._papers.length);
+    }
+
+    interestPriority(interest) {
+        if (interest === Interests.Interested) return 2;
+        if (interest === Interests.Maybe) return 1;
+        return 0;
+    }
+
+    candidatesForAssignment() {
+        const candidates = [];
+
+        this.papers().forEach(paper => {
+            this.programCommittee().forEach(reviewer => {
+                candidates.push({
+                    paper,
+                    reviewer,
+                    interest: this.interestPriority(this.interestOrDefaultFor(paper, reviewer))
+                });
+            });
+        });
+
+        return candidates;
     }
 
 }
