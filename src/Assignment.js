@@ -1,13 +1,16 @@
-class Assigment{
-    constructor(paper, reviewer){
+class Assignment {
+    constructor(paper, reviewer) {
         this._paper = paper;
         this._reviewer = reviewer;
     }
-    paper(){
+
+    paper() {
         return this._paper;
     }
-    reviewer(){
+
+    reviewer() {
         return this._reviewer;
     }
 }
-module.exports = Assigment;
+
+module.exports = Assignment;

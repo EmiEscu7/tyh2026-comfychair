@@ -1,30 +1,25 @@
 const SessionStage = require("./SessionStage");
 const SelectionStage = require("./SelectionStage");
 
-class RevisionStage extends SessionStage{
-    constructor(Session){
-        super(Session);
+class RevisionStage extends SessionStage {
+    canTransitionTo(nextStage) {
+        return nextStage instanceof SelectionStage;
     }
 
-    closeStage(){
-        let newStage = new SelectionStage(this._Session)
-        this._Session.changeStage(newStage)
-        return newStage
+    closeStage() {
+        this._session.transitionTo(new SelectionStage(this._session), this);
     }
 
-    enterReview(paper, reviewer, review, score){
-        if(this._Session.assigmentExistsFor(paper, reviewer)){
-            if(paper.reviewExistsFor(reviewer)){
-                throw new Error("El reviewer ya ingreso una review para este paper.");
-            }
-            else{
-                paper.addReview(reviewer,review,score) 
-            }           
-        }
-        else{
+    enterReview(paper, reviewer, review, score) {
+        if (!this._session.assignmentExistsFor(paper, reviewer)) {
             throw new Error("Reviewer no autorizado.");
         }
-        
+
+        if (paper.reviewExistsFor(reviewer)) {
+            throw new Error("El reviewer ya ingresó una review para este paper.");
+        }
+
+        paper.addReview(reviewer, review, score);
     }
 }
 
