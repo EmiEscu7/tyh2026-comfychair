@@ -7,7 +7,8 @@ class Paper{
         this._reviews = [];
         this._authors = authors;
         this._correspondingAuthor = correspondingAuthor;
-        this._accepted = false
+        this._accepted = false;
+        this.reviewrsAssigned = 0;
     }
     title(){
         return this._title;
@@ -72,8 +73,12 @@ class Paper{
         return this._accepted
     }
 
-    esAutor(reviewer){
-        return this.authors().includes(reviewer);
+    addReviewerAssigned(){
+        this.reviewrsAssigned++;
+    }
+    
+    getReviewersAssigned(){
+        return this.reviewrsAssigned;
     }
 
 }

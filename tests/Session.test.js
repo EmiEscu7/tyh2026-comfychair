@@ -1,7 +1,10 @@
 const Session = require("../src/Session");
+const Reviewer = require("../src/Reviewer");
 const User = require("../src/User");
 const Paper = require("../src/Paper");
 const {Bid, Interests} = require("../src/Bid");
+const AcceptanceByPercentage = require("../src/policies/AcceptanceByPercentage");
+const AcceptanceByCount = require("../src/policies/AcceptanceByCount");
 
 let newSession;
 let asse;
@@ -11,9 +14,9 @@ let paper01, paper02, paper03;
 beforeEach( ()=> {
     newSession = new Session();
     asse = new Session();
-    juan = new User("Juan Gardey", "LIFIA, UNLP", "jgardey@lifia.ar", "123");
-    julian = new User("Julián Grigera", "LIFIA, UNLP", "jgrigera@lifia.ar", "123");
-    matias = new User("Matias Urbieta", "LIFIA, UNLP", "murbieta@lifia.ar", "123");
+    juan = new Reviewer("Juan Gardey", "LIFIA, UNLP", "jgardey@lifia.ar", "123");
+    julian = new Reviewer("Julián Grigera", "LIFIA, UNLP", "jgrigera@lifia.ar", "123");
+    matias = new Reviewer("Matias Urbieta", "LIFIA, UNLP", "murbieta@lifia.ar", "123");
     paper01 = new Paper("A new approach on something", [juan, julian], juan);
     paper02 = new Paper("Another approach on something else", [matias, julian], matias);
     paper03 = new Paper("Yet another approach on something", [juan, matias], juan);
@@ -46,7 +49,7 @@ describe("A Session", ()=>{
 
         let sesion = new Session();
         let actualStage = sesion.stage();
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
         let paperA = new Paper("", [user1], user1);
 
         expect(actualStage.canSubmit(paperA)).toBe(false);
@@ -93,11 +96,11 @@ describe("During the assigment process, a Session", ()=>{
     it("should not allow to receive bids", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
-        let autor = new User("Autor", "Uni A", "autor@mail.com", "pass");
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let autor = new Reviewer("Autor", "Uni A", "autor@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
         let paperA = new Paper("Paper A", [autor], autor);
         let paperB = new Paper("Paper B", [autor], autor);
 
@@ -124,11 +127,11 @@ describe("During the revision process, a Session", ()=>{
     it("assigning papers should not be allowed", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
-        let autor = new User("Autor", "Uni A", "autor@mail.com", "pass");
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let autor = new Reviewer("Autor", "Uni A", "autor@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
         let paperA = new Paper("Paper A", [autor], autor);
         let paperB = new Paper("Paper B", [autor], autor);
 
@@ -159,11 +162,11 @@ describe("During the selection process, a Session", ()=>{
     it("should not allow to receive reviews", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
-        let autor = new User("Autor", "Uni A", "autor@mail.com", "pass");
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let autor = new Reviewer("Autor", "Uni A", "autor@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
         let paperA = new Paper("Paper A", [autor], autor);
         let paperB = new Paper("Paper B", [autor], autor);
 
@@ -180,7 +183,7 @@ describe("During the selection process, a Session", ()=>{
         actualStage.enterBid(paperA, user3, Interests.Maybe);
         actualStage = actualStage.closeStage();
 
-        actualStage.asignarRevisores()
+        actualStage.asignarRevisores();
         actualStage = actualStage.closeStage();
 
         actualStage.enterReview(paperA,user2,"Rev user2",2);
@@ -195,10 +198,10 @@ describe("During the selection process, a Session", ()=>{
 
 describe("US1.1: Cálculo de la carga de revisiones por revisor", ()=>{
     it("con 4 artículos y 4 revisores, cada revisor tiene exactamente 3 revisiones", ()=>{
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
         let paperC = new Paper("Paper C", [user3], user3);
@@ -215,23 +218,22 @@ describe("US1.1: Cálculo de la carga de revisiones por revisor", ()=>{
         actualStage.submit(paperC)
         actualStage.submit(paperD)
 
-        let carga = newSession.calcularCargaDeRevisiones();
+        newSession.calculateWorkload();
 
-        expect(Object.keys(carga)).toHaveLength(4);
-        expect(carga[0]).toBe(3);
-        expect(carga[1]).toBe(3);
-        expect(carga[2]).toBe(3);
-        expect(carga[3]).toBe(3);
+        expect(user1.getWorkload()).toBe(3);
+        expect(user2.getWorkload()).toBe(3);
+        expect(user3.getWorkload()).toBe(3);
+        expect(user4.getWorkload()).toBe(3);
     })
 
     it("con 10 artículos y 7 revisores, distribuye el resto: 2 revisores con 5 y 5 con 4", ()=>{
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
-        let user5 = new User("User 5", "Uni 5", "u5@mail.com", "pass");
-        let user6 = new User("User 6", "Uni 6", "u6@mail.com", "pass");
-        let user7 = new User("User 7", "Uni 7", "u7@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user5 = new Reviewer("User 5", "Uni 5", "u5@mail.com", "pass");
+        let user6 = new Reviewer("User 6", "Uni 6", "u6@mail.com", "pass");
+        let user7 = new Reviewer("User 7", "Uni 7", "u7@mail.com", "pass");
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
         let paperC = new Paper("Paper C", [user3], user3);
@@ -263,16 +265,15 @@ describe("US1.1: Cálculo de la carga de revisiones por revisor", ()=>{
         actualStage.submit(paperI)
         actualStage.submit(paperJ)
 
-        let carga = newSession.calcularCargaDeRevisiones();
+        newSession.calculateWorkload();
 
-        expect(Object.keys(carga)).toHaveLength(7);
-        expect(carga[0]).toBe(5);
-        expect(carga[1]).toBe(5);
-        expect(carga[2]).toBe(4);
-        expect(carga[3]).toBe(4);
-        expect(carga[4]).toBe(4);
-        expect(carga[5]).toBe(4);
-        expect(carga[6]).toBe(4);
+        expect(user1.getWorkload()).toBe(5);
+        expect(user2.getWorkload()).toBe(5);
+        expect(user3.getWorkload()).toBe(4);
+        expect(user4.getWorkload()).toBe(4);
+        expect(user5.getWorkload()).toBe(4);
+        expect(user6.getWorkload()).toBe(4);
+        expect(user7.getWorkload()).toBe(4);
     })
 })
 
@@ -280,11 +281,11 @@ describe("US1.2: Asignación de revisores basada en prioridades de Bidding", ()=
     it("asigna los 3 revisores de mayor prioridad al Paper A", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
-        let autor = new User("Autor", "Uni A", "autor@mail.com", "pass");
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let autor = new Reviewer("Autor", "Uni A", "autor@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
         let paperA = new Paper("Paper A", [autor], autor);
         let paperB = new Paper("Paper B", [autor], autor);
 
@@ -317,11 +318,11 @@ describe("US1.3: Exclusión de revisores por Conflicto de Interés", ()=>{
     it("excluye al autor del paper aunque tenga el bid de mayor prioridad", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
-        let user5 = new User("User 5", "Uni 5", "u5@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user5 = new Reviewer("User 5", "Uni 5", "u5@mail.com", "pass");
         let paperA = new Paper("Paper A", [user1, user2], user1);
 
         sesion.addReviewer(user1);
@@ -352,10 +353,10 @@ describe("US1.3: Exclusión de revisores por Conflicto de Interés", ()=>{
     it("no se permite asignar más de una vez a un mismo revisor a un paper.", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
         let paperA = new Paper("Paper A", [user1], user1);
 
         sesion.addReviewer(user1);
@@ -385,10 +386,10 @@ describe("US2.1: Registro de revisión por un revisor asignado", ()=>{
    it("solo permite cargar una review a un artículo asignado.", ()=>{
        let sesion = new Session();
        let actualStage = sesion.stage()
-       let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-       let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-       let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-       let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+       let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+       let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+       let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+       let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
        let paperA = new Paper("Paper A", [user1], user1);
 
        sesion.addReviewer(user1);
@@ -421,10 +422,10 @@ describe("US2.1: Registro de revisión por un revisor asignado", ()=>{
    it("solo permite cargar una review con un score entre -3 y +3.", ()=>{
        let sesion = new Session();
        let actualStage = sesion.stage()
-       let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-       let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-       let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-       let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+       let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+       let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+       let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+       let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
        let paperA = new Paper("Paper A", [user1], user1);
 
        sesion.addReviewer(user1);
@@ -456,10 +457,10 @@ describe("US2.2: Límite de revisiones por artículo", ()=>{
     it("Un artículo no puede admitir más de 3 revisiones en total.", ()=>{
        let sesion = new Session();
        let actualStage = sesion.stage()
-       let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-       let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-       let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-       let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+       let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+       let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+       let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+       let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
        let paperA = new Paper("Paper A", [user1], user1);
 
        sesion.addReviewer(user1);
@@ -496,10 +497,10 @@ describe("US2.3: Cálculo automático del score del artículo", ()=>{
     it("El score de un artículo debe calcularse como el promedio exacto de los puntajes de las revisiones que ha recibido hasta el momento.", ()=>{
        let sesion = new Session();
        let actualStage = sesion.stage()
-       let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-       let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-       let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-       let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+       let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+       let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+       let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+       let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
        let paperA = new Paper("Paper A", [user1], user1);
 
        sesion.addReviewer(user1);
@@ -556,9 +557,9 @@ describe("US3.2: Ordenamiento de artículos por Score decreciente", ()=>{
     it("retorna los artículos ordenados por score descendente, desempatando por orden de llegada", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
 
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
@@ -601,11 +602,11 @@ describe("US3.3: Selección automática por Corte Fijo", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
 
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
-        let user5 = new User("User 5", "Uni 5", "u5@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user5 = new Reviewer("User 5", "Uni 5", "u5@mail.com", "pass");
 
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
@@ -629,10 +630,10 @@ describe("US3.3: Selección automática por Corte Fijo", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
 
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
 
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
@@ -683,10 +684,10 @@ describe("US3.3: Selección automática por Corte Fijo", ()=>{
     it("Para score final de un artículo se completan con puntaje -3 por review faltante.", ()=>{
        let sesion = new Session();
        let actualStage = sesion.stage()
-       let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-       let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-       let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-       let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+       let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+       let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+       let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+       let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
        let paperA = new Paper("Paper A", [user1], user1);
 
        sesion.addReviewer(user1);
@@ -724,10 +725,10 @@ it("no se permite obtener el listado de articulos aceptados en otra etapa que no
         let sesion = new Session();
         let actualStage = sesion.stage()
 
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
 
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
@@ -768,9 +769,9 @@ it("no se permite obtener el listado de articulos aceptados en otra etapa que no
     it("retorna los artículos ordenados por score descendente, desempatando por orden de llegada", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage()
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
 
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
@@ -807,10 +808,10 @@ describe("US2.1: Patrón Strategy - Extracción de Política por Porcentaje", ()
         let sesion = new Session();
         let actualStage = sesion.stage();
 
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
 
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
@@ -857,11 +858,11 @@ describe("US2.2: Política de Aceptación por Cantidad Fija (AcceptanceByCount)"
         let sesion = new Session();
         let actualStage = sesion.stage();
 
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
-        let user5 = new User("User 5", "Uni 5", "u5@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user5 = new Reviewer("User 5", "Uni 5", "u5@mail.com", "pass");
 
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
@@ -922,11 +923,11 @@ describe("US2.3: Política de Aceptación por Umbral de Score (AcceptanceByScore
         let sesion = new Session();
         let actualStage = sesion.stage();
 
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
-        let user5 = new User("User 5", "Uni 5", "u5@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user5 = new Reviewer("User 5", "Uni 5", "u5@mail.com", "pass");
 
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
@@ -988,10 +989,10 @@ describe("US2.4: Intercambio Dinámico de Políticas (Patrón Strategy)", ()=>{
         let sesion = new Session();
         let actualStage = sesion.stage();
 
-        let user1 = new User("User 1", "Uni 1", "u1@mail.com", "pass");
-        let user2 = new User("User 2", "Uni 2", "u2@mail.com", "pass");
-        let user3 = new User("User 3", "Uni 3", "u3@mail.com", "pass");
-        let user4 = new User("User 4", "Uni 4", "u4@mail.com", "pass");
+        let user1 = new Reviewer("User 1", "Uni 1", "u1@mail.com", "pass");
+        let user2 = new Reviewer("User 2", "Uni 2", "u2@mail.com", "pass");
+        let user3 = new Reviewer("User 3", "Uni 3", "u3@mail.com", "pass");
+        let user4 = new Reviewer("User 4", "Uni 4", "u4@mail.com", "pass");
 
         let paperA = new Paper("Paper A", [user1], user1);
         let paperB = new Paper("Paper B", [user2], user2);
@@ -1047,5 +1048,89 @@ describe("US2.4: Intercambio Dinámico de Políticas (Patrón Strategy)", ()=>{
         expect(paperC.isAccepted()).toBe(false);
 
         actualStage = actualStage.closeStage();
+    })
+})
+
+
+describe("Flujo completo con usuarios que no son revisores", ()=>{
+    it("permite completar la sesión sin que los usuarios no revisores participen en la asignación", ()=>{
+        let sesion = new Session();
+        let actualStage = sesion.stage();
+
+        let autor = new User("Autor", "Uni A", "autor@mail.com", "pass");
+        let noRevisor = new User("No revisor", "Uni B", "noreviewer@mail.com", "pass");
+        let reviewer1 = new Reviewer("Reviewer 1", "Uni 1", "r1@mail.com", "pass");
+        let reviewer2 = new Reviewer("Reviewer 2", "Uni 2", "r2@mail.com", "pass");
+        let reviewer3 = new Reviewer("Reviewer 3", "Uni 3", "r3@mail.com", "pass");
+
+        let paperA = new Paper("Paper A", [autor, noRevisor], autor);
+
+        sesion.addReviewer(reviewer1);
+        sesion.addReviewer(reviewer2);
+        sesion.addReviewer(reviewer3);
+
+        actualStage.submit(paperA);
+        actualStage = actualStage.closeStage();
+
+        actualStage.enterBid(paperA, reviewer1, Interests.Interested);
+        actualStage.enterBid(paperA, reviewer2, Interests.Interested);
+        actualStage.enterBid(paperA, reviewer3, Interests.Maybe);
+        actualStage = actualStage.closeStage();
+
+        actualStage.asignarRevisores();
+
+        expect(sesion.assigmentExistsFor(paperA, reviewer1)).toBe(true);
+        expect(sesion.assigmentExistsFor(paperA, reviewer2)).toBe(true);
+        expect(sesion.assigmentExistsFor(paperA, reviewer3)).toBe(true);
+        expect(sesion.assigmentExistsFor(paperA, noRevisor)).toBe(false);
+        expect(sesion.assigmentsPapers(paperA)).toBe(3);
+
+        actualStage = actualStage.closeStage();
+
+        actualStage.enterReview(paperA, reviewer1, "Rev 1", 2);
+        actualStage.enterReview(paperA, reviewer2, "Rev 2", 1);
+        actualStage.enterReview(paperA, reviewer3, "Rev 3", -1);
+
+        expect(paperA.reviews()).toHaveLength(3);
+        expect(paperA.score()).toBeCloseTo(2 / 3, 5);
+
+        let acceptancePolicy = new AcceptanceByCount(2);
+        sesion.setAcceptancePolicy(acceptancePolicy);
+
+        actualStage = actualStage.closeStage();
+
+        let aceptados = actualStage.obtenerArticulosAceptados();
+        expect(aceptados).toHaveLength(1);
+        expect(paperA.isAccepted()).toBe(true);
+    })
+
+    it("no debe asignar revisiones a un usuario que no forma parte del comité", ()=>{
+        let sesion = new Session();
+        let actualStage = sesion.stage();
+
+        let autor = new User("Autor", "Uni A", "autor@mail.com", "pass");
+        let noRevisor = new User("No revisor", "Uni B", "noreviewer@mail.com", "pass");
+        let reviewer1 = new Reviewer("Reviewer 1", "Uni 1", "r1@mail.com", "pass");
+        let reviewer2 = new Reviewer("Reviewer 2", "Uni 2", "r2@mail.com", "pass");
+        let reviewer3 = new Reviewer("Reviewer 3", "Uni 3", "r3@mail.com", "pass");
+
+        let paperA = new Paper("Paper A", [autor, noRevisor], autor);
+
+        sesion.addReviewer(reviewer1);
+        sesion.addReviewer(reviewer2);
+        sesion.addReviewer(reviewer3);
+
+        actualStage.submit(paperA);
+        actualStage = actualStage.closeStage();
+
+        actualStage.enterBid(paperA, reviewer1, Interests.Interested);
+        actualStage.enterBid(paperA, reviewer2, Interests.Interested);
+        actualStage.enterBid(paperA, reviewer3, Interests.Maybe);
+        actualStage = actualStage.closeStage();
+
+        actualStage.asignarRevisores();
+
+        expect(sesion.assigmentExistsFor(paperA, noRevisor)).toBe(false);
+        expect(sesion.assigmentsPapers(paperA)).toBe(3);
     })
 })

@@ -13,6 +13,14 @@ class User{
     getEncryptedPassword(){
         return this.encryptedPassword;
     }
+
+    setPapersAssigned(){
+        this.papersAssigned++;
+    }
+
+    getPapersAssigned(){
+        return this.papersAssigned;
+    }
 }
 
 module.exports = User;

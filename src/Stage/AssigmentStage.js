@@ -16,36 +16,30 @@ class AssigmentStage extends SessionStage{
 
     enterAssigment(paper, reviewer){
         if (!this._Session.assigmentExistsFor(paper, reviewer)){
+            paper.addReviewerAssigned();
+            reviewer.setPapersAssigned();
             let asignacion = new Assigment(paper, reviewer);
-            let asignaciones = this._Session.assignments()
-            asignaciones.push(asignacion);
+            this._Session.assignments().push(asignacion);
         }
         else throw new Error("Asignación ya existe para el par (paper,reviewer) ingresado.");        
     }
 
     interestPriority(interest){
-        if(interest == Interests.Interested) return 2;
-        if(interest == Interests.Maybe) return 1;
+        if(interest === Interests.Interested) return 2;
+        if(interest === Interests.Maybe) return 1;
         return 0;
     }
 
-    asignarRevisores(){
-        for(let i = 0; i < this._Session.papers().length; i++){
-            let paper = this._Session.papers()[i];
-            let candidatos = [];
-            for(let j = 0; j < this._Session.programCommittee().length; j++){
-                let reviewer = this._Session.programCommittee()[j];
-                if(paper.esAutor(reviewer)) continue;
-                let interest = this._Session.interestOrDefaultFor(paper, reviewer);
-                candidatos.push({reviewer: reviewer, priority: this.interestPriority(interest)});
-            }
-            candidatos.sort(function(a, b){ return b.priority - a.priority; });
+    asignarRevisores() {
+        this._Session.calculateWorkload();
+        const candidates = this._Session.candidatesForAssignment()
+            .sort((a, b) => b.interest - a.interest);
 
-            for(let k = 0; k < 3; k++){
-                this.enterAssigment(paper,candidatos[k].reviewer)
+        for (const { paper, reviewer } of candidates) {
+            if (paper.getReviewersAssigned() < 3 && reviewer.acceptPapers() && !reviewer.isAuthor(paper.authors())) {
+                this.enterAssigment(paper, reviewer);
             }
         }
-        
     }
 }
 
